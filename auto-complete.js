@@ -49,9 +49,7 @@ var autoComplete = (function(){
 
         // init
         var elems = typeof o.selector == 'object' ? [o.selector] : document.querySelectorAll(o.selector);
-        for (var i=0; i<elems.length; i++) {
-            var that = elems[i];
-
+        var makeAutoComplete = function (that) {
             // create suggestions container "sc"
             that.sc = document.createElement('div');
             that.sc.className = 'autocomplete-suggestions '+o.menuClass;
@@ -80,7 +78,7 @@ var autoComplete = (function(){
                                 that.sc.scrollTop = selTop + scrTop;
                         }
                 }
-            }
+            };
             addEvent(window, 'resize', that.updateSC);
             document.body.appendChild(that.sc);
 
@@ -105,7 +103,8 @@ var autoComplete = (function(){
             }, that.sc);
 
             that.blurHandler = function(){
-                try { var over_sb = document.querySelector('.autocomplete-suggestions:hover'); } catch(e){ var over_sb = 0; }
+                var over_sb = 0;
+                try { over_sb = document.querySelector('.autocomplete-suggestions:hover'); } catch(e){}
                 if (!over_sb) {
                     that.last_val = that.value;
                     that.sc.style.display = 'none';
@@ -125,13 +124,14 @@ var autoComplete = (function(){
                 }
                 else
                     that.sc.style.display = 'none';
-            }
+            };
 
             that.keydownHandler = function(e){
-                var key = window.event ? e.keyCode : e.which;
+                var sel, key = window.event ? e.keyCode : e.which;
                 // down (40), up (38)
                 if ((key == 40 || key == 38) && that.sc.innerHTML) {
-                    var next, sel = that.sc.querySelector('.autocomplete-suggestion.selected');
+                    var next;
+                    sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                     if (!sel) {
                         next = (key == 40) ? that.sc.querySelector('.autocomplete-suggestion') : that.sc.childNodes[that.sc.childNodes.length - 1]; // first : last
                         next.className += ' selected';
@@ -152,7 +152,7 @@ var autoComplete = (function(){
                 else if (key == 27) { that.value = that.last_val; that.sc.style.display = 'none'; }
                 // enter
                 else if (key == 13 || key == 9) {
-                    var sel = that.sc.querySelector('.autocomplete-suggestion.selected');
+                    sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                     if (sel && that.sc.style.display != 'none') { o.onSelect(e, sel.getAttribute('data-val'), sel); setTimeout(function(){ that.sc.style.display = 'none'; }, 20); }
                 }
             };
@@ -174,7 +174,7 @@ var autoComplete = (function(){
                                     if (part in that.cache && !that.cache[part].length) { suggest([]); return; }
                                 }
                             }
-                            that.timer = setTimeout(function(){ o.source(val, suggest) }, o.delay);
+                            that.timer = setTimeout(function(){ o.source(val, suggest); }, o.delay);
                         }
                     } else {
                         that.last_val = val;
@@ -186,9 +186,13 @@ var autoComplete = (function(){
 
             that.focusHandler = function(e){
                 that.last_val = '\n';
-                that.keyupHandler(e)
+                that.keyupHandler(e);
             };
             if (!o.minChars) addEvent(that, 'focus', that.focusHandler);
+        };
+        
+        for (var i=0; i<elems.length; i++) {
+            makeAutoComplete(elems[i]);
         }
 
         // public destroy method
