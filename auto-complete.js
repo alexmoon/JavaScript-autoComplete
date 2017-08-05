@@ -56,6 +56,9 @@ var autoComplete = (function(){
             // create suggestions container "sc"
             that.sc = document.createElement('div');
             that.sc.className = 'autocomplete-suggestions '+o.menuClass;
+            if (that.id) {
+                that.sc.setAttribute('data-for', that.id);
+            }
 
             that.autocompleteAttr = that.getAttribute('autocomplete');
             that.setAttribute('autocomplete', 'off');
